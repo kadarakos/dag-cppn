@@ -3,6 +3,31 @@ import math
 import secrets
 
 class Node(object):
+    """A neuron in a network. 
+    
+    Takes inputs, adds them up and applies
+    and activation function to the sum.
+    
+    Parameters
+    ----------
+    idx : str
+        Name of the node.
+    func : function
+        Activation function.
+
+    Attributes
+    ----------
+    idx : str
+        Name of the node.
+    func : function
+        Activation function.
+    inputs : list
+        Accumulates input values to the node.
+    out_edges : list
+        Outgoing edges of the node.
+        
+    """
+    
     def __init__(self, idx, func):
         self.idx = idx
         self.func = func
@@ -10,12 +35,36 @@ class Node(object):
         self.out_edges = []
 
     def add_outedge(self, edge):
+        """Adds an outgoing edge to the node.
+
+        Parameters
+        ----------
+        edge : Edge object
+            Edge to add.
+
+        """
         self.out_edges.append(edge)
 
     def add_input(self, x):
+        """Adds an input to the list.
+
+        Parameters
+        ----------
+        edge : float
+            New input value.
+
+        """
         self.inputs.append(x)
 
     def propagate(self):
+        """Propagate inputs forward and refresh inputs list.
+
+        Returns
+        --------
+        x : float
+            Apply activation to the sum of the inputs.
+
+        """
         x = self.func(sum(self.inputs))
         self.inputs = []
         return x
@@ -25,6 +74,34 @@ class Node(object):
 
 
 class Edge(object):
+    """An edge between nodes. 
+    
+    It adds its weight to the parent
+    activation value and adds its own weight to it.
+    
+    Parameters
+    ----------
+    idx : str
+        Name of the node.
+    parent : Node object
+        Node from which this edge is outgoing.
+    child : Node object
+        Node to which this edge is ingoing.
+    weight : float
+        Weight to add to the activation of the parent.
+
+    Attributes
+    ----------
+    idx : str
+        Name of the node.
+    parent : Node object
+        Node from which this edge is outgoing.
+    child : Node object
+        Node to which this edge is ingoing.
+    weight : float
+        Weight to add to the activation of the parent.
+        
+    """
     def __init__(self, idx, parent, child, weight):
         self.idx = idx
         self.parent = parent
@@ -32,6 +109,7 @@ class Edge(object):
         self.weight = weight
 
     def propagate(self):
+        """Propagate activation from parent to child."""
         x = self.parent.propagate()
         x += self.weight
         self.child.add_input(x)
@@ -45,10 +123,33 @@ class Network(object):
         self.networkx_graph = None
 
     def gen_weight(self, mu=0, sigma=1):
+        """Generate new weight for an edge
+
+        Parameters
+        ----------
+        mu : float
+            Mean of the gaussian distribution.
+        sigma : float
+            Variance of the gaussian distribution.
+
+        Returns
+        ----------
+        w : float
+            Weight value.
+
+        """
         w = random.gauss(mu, sigma)
         return w
 
     def gen_node(self, layer):
+        """Create new node.
+        
+        Returns
+        -------
+        node : Node object
+            New node.
+
+        """
         node_idx = "{}-{}".format(layer, len(self.nodes))
         f = random.choice(activation_functions)
         return Node(node_idx, f)
@@ -64,10 +165,14 @@ class Network(object):
         self.edges.append(edge)
 
     def add_layer(self):
+        """Add a new layer between any two layers."""
+        place = random.randint(1, 
+                               len(self.layers) - 1)
         layers = [[]] * (len(self.layers) + 1)
         for i, l in enumerate(self.layers[:-1]):
             layers[i] = l
         layers[-1] = self.layers[-1]
+        layers[place], layers[-2] = layers[-2], layers[place]
         self.layers = layers
     
     def add_random_node(self):
