@@ -64,12 +64,12 @@ class Network(object):
         self.edges.append(edge)
 
     def add_layer(self):
-        layers = [[]] * len(self.layers)
-        for i, l in enumarate(self.layers):
+        layers = [[]] * (len(self.layers) + 1)
+        for i, l in enumerate(self.layers[:-1]):
             layers[i] = l
-            pass
-
-
+        layers[-1] = self.layers[-1]
+        self.layers = layers
+    
     def add_random_node(self):
         l = random.randint(1, len(self.layers) - 1)
         n = gen_node(l)
